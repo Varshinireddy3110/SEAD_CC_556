@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopkeeper Inventory Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .login-container {
+            margin: 50px auto;
+            padding: 50px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            width: 50%;
+        }
+        .login-container input {
+            display: block;
+            margin: 20px auto;
+            width: 80%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .login-container button {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            width: 85%;
+            border-radius: 4px;
+        }
+        .inventory-container {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            display: none;
+        }
+        .item {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .item img {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-actions button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.add {
+            background-color: #28a745;
+            color: white;
+        }
+        button.remove {
+            background-color: #dc3545;
+            color: white;
+        }
+        .alert {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            text-align: center;
+            z-index: 9999;
+            display: none;
+        }
+        .popup button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Shopkeeper Inventory Management
+    </header>
+
+    <!-- Full-Screen Popup -->
+    <div class="popup" id="popup">
+        <div>
+            <p id="popup-message"></p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
+
+    <!-- Login Section -->
+    <div class="login-container" id="login-section">
+        <h2 style="text-align: center;">Login</h2>
+        <input type="text" id="username" placeholder="Enter Username">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Inventory Section -->
+    <div class="inventory-container" id="inventory-section">
+        <div id="inventory-items"></div>
+    </div>
+
+    <script>
+        const inventory = [
+            { name: 'Toothpaste', price: 50, stock: Math.floor(Math.random() * 100) + 10, originalStock: 0, image: 'https://via.placeholder.com/60?text=Toothpaste' },
+            { name: 'Soap', price: 30, stock: Math.floor(Math.random() * 100) + 10, originalStock: 0, image: 'https://via.placeholder.com/60?text=Soap' },
+            { name: 'Rice', price: 60, stock: Math.floor(Math.random() * 100) + 10, originalStock: 0, image: 'https://via.placeholder.com/60?text=Rice' },
+            // ... Add more items (total 50) here!
+        ];
+
+        const username = "vamshi";
+        const password = "sead";
+
+        const loginSection = document.getElementById('login-section');
+        const inventorySection = document.getElementById('inventory-section');
+        const inventoryItems = document.getElementById('inventory-items');
+        const popup = document.getElementById('popup');
+        const popupMessage = document.getElementById('popup-message');
+
+        function login() {
+            const inputUsername = document.getElementById('username').value;
+            const inputPassword = document.getElementById('password').value;
+
+            if (inputUsername === username && inputPassword === password) {
+                loginSection.style.display = 'none';
+                inventorySection.style.display = 'block';
+                renderInventory();
+            } else {
+                alert('Invalid username or password!');
+            }
+        }
+
+        function renderInventory() {
+            inventoryItems.innerHTML = '';
+            inventory.forEach((item, index) => {
+                if (item.originalStock === 0) {
+                    item.originalStock = item.stock;
+                }
+
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('item');
+                itemElement.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <p>Price: ₹${item.price}</p>
+                        <p>Stock: ${item.stock} ${item.stock === 0 ? '<span class="alert">Out of Stock</span>' : ''}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button class="add" onclick="restockItem(${index})">Restock</button>
+                        <button class="remove" onclick="sellItem(${index})">Sell</button>
+                    </div>
+                `;
+                inventoryItems.appendChild(itemElement);
+
+                if (item.stock <= item.originalStock * 0.5 && item.stock > 0) {
+                    showPopup(`${item.name} is running out of stock!`);
+                }
+            });
+        }
+
+        function restockItem(index) {
+            const restockAmount = prompt('Enter restock quantity:', 10);
+            if (restockAmount && parseInt(restockAmount) > 0) {
+                inventory[index].stock += parseInt(restockAmount);
+                renderInventory();
+            }
+        }
+
+        function sellItem(index) {
+            const sellAmount = prompt('Enter quantity to sell:', 1);
+            if (sellAmount && parseInt(sellAmount) > 0 && parseInt(sellAmount) <= inventory[index].stock) {
+                inventory[index].stock -= parseInt(sellAmount);
+                renderInventory();
+            } else if (sellAmount > inventory[index].stock) {
+                alert(`Insufficient stock for ${inventory[index].name}!`);
+            }
+        }
+
+        function showPopup(message) {
+            popupMessage.textContent = message;
+            popup.style.display = 'flex';
+        }
+
+        function closePopup() {
+            popup.style.display = 'none';
+        }
+
+        renderInventory();
+    </script>
+</body>
+</html>
